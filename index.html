@@ -1,1 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>DevOps Demo App</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial;
+      background: #f4f4f4;
+      margin-top: 100px;
+    }
+    h1 { color: #333; }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
 
+<h1>🚀 Deployed via CI/CD on EKS</h1>
+<p>This is my DevOps demo app</p>
+
+<button onclick="changeText()">Click Me</button>
+<p id="msg"></p>
+
+<script>
+function changeText() {
+  document.getElementById("msg").innerText = "App updated successfully! 🎉";
+}
+</script>
+
+</body>
+</html>
