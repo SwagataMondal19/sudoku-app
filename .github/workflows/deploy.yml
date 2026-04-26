@@ -22,7 +22,7 @@ jobs:
 
     - name: Login to ECR
       run: |
-        aws ecr get-login-password | docker login --username AWS --password-stdin 673084610131.dkr.ecr.ap-south-1.amazonaws.com/demo-app
+        aws ecr get-login-password | docker login --username AWS --password-stdin 673084610131.dkr.ecr.ap-south-1.amazonaws.com
 
     - name: Build image
       run: docker build -t demo-app .
