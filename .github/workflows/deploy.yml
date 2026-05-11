@@ -2,7 +2,8 @@ name: Deploy to EKS
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - "main"
 
 jobs:
   deploy:
@@ -10,33 +11,44 @@ jobs:
 
     steps:
 
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
-        aws-region: ap-south-1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ap-south-1
 
-    - name: Login to ECR
-      run: |
-        aws ecr get-login-password | docker login --username AWS --password-stdin 673084610131.dkr.ecr.ap-south-1.amazonaws.com
+      - name: Check AWS Identity
+        run: aws sts get-caller-identity
 
-    - name: Build image
-      run: docker build -t demo-app .
+      - name: Login to ECR
+        run: |
+          aws ecr get-login-password | docker login --username AWS --password-stdin 673084610131.dkr.ecr.ap-south-1.amazonaws.com
 
-    - name: Push image
-      run: |
-        docker tag demo-app:latest 673084610131.dkr.ecr.ap-south-1.amazonaws.com/demo-app:${{ github.sha }}
-        docker push 673084610131.dkr.ecr.ap-south-1.amazonaws.com/demo-app:${{ github.sha }}
+      - name: Build Docker image
+        run: |
+          docker build -t demo-app .
 
-    - name: Update kubeconfig
-      run: |
-        aws eks update-kubeconfig --name my-eks-cluster --region ap-south-1
+      - name: Tag Docker image
+        run: |
+          docker tag demo-app:latest 673084610131.dkr.ecr.ap-south-1.amazonaws.com/demo-app:${{ github.sha }}
 
-    - name: Deploy to EKS
-      run: |
-        kubectl apply -f k8s/
-        kubectl set image deployment/demo-app demo-container=673084610131.dkr.ecr.ap-south-1.amazonaws.com/demo-app:${{ github.sha }}
+      - name: Push Docker image to ECR
+        run: |
+          docker push 673084610131.dkr.ecr.ap-south-1.amazonaws.com/demo-app:${{ github.sha }}
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name my-eks-cluster --region ap-south-1
+
+      - name: Verify EKS access
+        run: |
+          kubectl get nodes
+
+      - name: Deploy to EKS
+        run: |
+          kubectl apply -f k8s/
+          kubectl set image deployment/demo-app demo-container=673084610131.dkr.ecr.ap-south-1.amazonaws.com/demo-app:${{ github.sha }} -n default
