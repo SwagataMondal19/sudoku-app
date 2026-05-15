@@ -40,7 +40,7 @@ jobs:
 
     - name: Update kubeconfig
       run: |
-        aws eks update-kubeconfig --name my-cluster-3 --region ap-south-1
+        aws eks update-kubeconfig --name my-eks-cluster-1 --region ap-south-1
 
     - name: Deploy to TEST
       if: github.ref == 'refs/heads/seup-brancht'
