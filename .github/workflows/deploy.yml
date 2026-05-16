@@ -43,7 +43,7 @@ jobs:
 
       - name: Update kubeconfig
         run: |
-          aws eks update-kubeconfig --name my-eks-cluster --region ap-south-1
+          aws eks update-kubeconfig --name my-eks-cluster-1 --region ap-south-1
 
       - name: Verify EKS access
         run: |
