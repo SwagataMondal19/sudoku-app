@@ -3,7 +3,8 @@ name: Deploy to EKS
 on:
   push:
     branches:
-      - "main"
+      - main
+      - seup-brancht
 
 jobs:
   deploy:
@@ -28,17 +29,17 @@ jobs:
         run: |
           aws ecr get-login-password | docker login --username AWS --password-stdin 673084610131.dkr.ecr.ap-south-1.amazonaws.com
 
-      - name: Build Docker image
-        run: |
-          docker build -t demo-app .
+    - name: Build image
+      run: |
+        docker build -t demo-app .
 
-      - name: Tag Docker image
-        run: |
-          docker tag demo-app:latest 673084610131.dkr.ecr.ap-south-1.amazonaws.com/demo-app:${{ github.sha }}
+    - name: Tag image
+      run: |
+        docker tag demo-app:latest 673084610131.dkr.ecr.ap-south-1.amazonaws.com/demo-app:latest
 
-      - name: Push Docker image to ECR
-        run: |
-          docker push 673084610131.dkr.ecr.ap-south-1.amazonaws.com/demo-app:${{ github.sha }}
+    - name: Push image
+      run: |
+        docker push 673084610131.dkr.ecr.ap-south-1.amazonaws.com/demo-app:latest
 
       - name: Update kubeconfig
         run: |
@@ -48,7 +49,19 @@ jobs:
         run: |
           kubectl get nodes
 
-      - name: Deploy to EKS
-        run: |
-          kubectl apply -f k8s/
-          kubectl set image deployment/demo-app demo-container=673084610131.dkr.ecr.ap-south-1.amazonaws.com/demo-app:${{ github.sha }} -n default
+    - name: Deploy to TEST
+      if: github.ref == 'refs/heads/seup-brancht'
+      run: |
+        kubectl apply -f k8s/test/
+        kubectl rollout restart deployment/demo-app -n dev
+
+    - name: Deploy to LIVE
+      if: github.ref == 'refs/heads/main'
+      run: |
+        kubectl apply -f k8s/live/
+        kubectl rollout restart deployment/demo-app -n prod
+
+    - name: Verify deployment
+      run: |
+        kubectl get pods -A
+        kubectl get svc -A
