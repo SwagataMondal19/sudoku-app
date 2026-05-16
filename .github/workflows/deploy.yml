@@ -29,17 +29,17 @@ jobs:
         run: |
           aws ecr get-login-password | docker login --username AWS --password-stdin 673084610131.dkr.ecr.ap-south-1.amazonaws.com
 
-    - name: Build image
-      run: |
-        docker build -t demo-app .
+      - name: Build image
+        run: |
+          docker build -t demo-app .
 
-    - name: Tag image
-      run: |
-        docker tag demo-app:latest 673084610131.dkr.ecr.ap-south-1.amazonaws.com/demo-app:latest
+      - name: Tag image
+        run: |
+          docker tag demo-app:latest 673084610131.dkr.ecr.ap-south-1.amazonaws.com/demo-app:latest
 
-    - name: Push image
-      run: |
-        docker push 673084610131.dkr.ecr.ap-south-1.amazonaws.com/demo-app:latest
+      - name: Push image
+        run: |
+          docker push 673084610131.dkr.ecr.ap-south-1.amazonaws.com/demo-app:latest
 
       - name: Update kubeconfig
         run: |
@@ -49,19 +49,19 @@ jobs:
         run: |
           kubectl get nodes
 
-    - name: Deploy to TEST
-      if: github.ref == 'refs/heads/seup-brancht'
-      run: |
-        kubectl apply -f k8s/test/
-        kubectl rollout restart deployment/demo-app -n dev
+      - name: Deploy to TEST
+        if: github.ref == 'refs/heads/seup-brancht'
+        run: |
+          kubectl apply -f k8s/test/
+          kubectl rollout restart deployment/demo-app -n dev
 
-    - name: Deploy to LIVE
-      if: github.ref == 'refs/heads/main'
-      run: |
-        kubectl apply -f k8s/live/
-        kubectl rollout restart deployment/demo-app -n prod
+      - name: Deploy to LIVE
+        if: github.ref == 'refs/heads/main'
+        run: |
+          kubectl apply -f k8s/live/
+          kubectl rollout restart deployment/demo-app -n prod
 
-    - name: Verify deployment
-      run: |
-        kubectl get pods -A
-        kubectl get svc -A
+      - name: Verify deployment
+        run: |
+          kubectl get pods -A
+          kubectl get svc -A
